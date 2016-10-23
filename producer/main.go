@@ -7,18 +7,19 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"fmt"
 )
 
 type Request struct {
-	ID int `json:"id"`
-	Name  string `json:"name"`
+	id    int     `json:"id"`
+	name  string  `json:"name"`
 }
 
 var request Request
 
 const (
-	BROKERS_URL string = "localhost:9092"
-	TOPIC_NAME   string = "test"
+	BROKERS_URL string = "192.168.10.101:9092"
+	TOPIC_NAME  string = "test"
 )
 
 func producer(context *gin.Context) {
@@ -29,7 +30,8 @@ func producer(context *gin.Context) {
 		panic(err)
 	}
 
-	reqString := string(marshalRequest)
+	fmt.Println(marshalRequest)
+	reqString := string("this is it")
 
 	config := sarama.NewConfig()
 	config.Producer.Retry.Max = 5
@@ -42,18 +44,12 @@ func producer(context *gin.Context) {
 		panic(err)
 	}
 
-	defer func() {
-		if err := producer.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
 	strTime := strconv.Itoa(int(time.Now().Unix()))
 
 	msg := &sarama.ProducerMessage{
 		Topic: TOPIC_NAME,
 		Key:   sarama.StringEncoder(strTime),
-		Value: sarama.StringEncoder(reqString),
+		Value: sarama.StringEncoder("hello this is test string"),
 	}
 
 	producer.Input() <- msg
